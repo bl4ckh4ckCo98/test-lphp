@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test l.php desde WebView</title>
+    
+    <!-- OG tags para que Meta scrapee la página -->
+    <meta property="og:title" content="Test l.php WebView">
+    <meta property="og:description" content="Probando si l.php hace SSRF">
+    
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f0f2f5; }
+        button { background: #1877f2; color: white; border: none; padding: 12px 24px; 
+                 border-radius: 6px; font-size: 16px; margin: 10px 0; }
+        pre { background: #fff; padding: 15px; border-radius: 8px; 
+              white-space: pre-wrap; word-break: break-all; border: 1px solid #ddd; }
+        .info { background: #e7f3ff; padding: 10px; border-radius: 6px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h2>Test l.php desde WebView de Facebook</h2>
+    
+    <div class="info">
+        <b>Objetivo:</b> Ver qué responde l.php cuando el fetch lo hace el WebView.<br>
+        <b>Esperado:</b> HTML con location.replace. No es SSRF porque la IP es tuya.
+    </div>
+
+    <button onclick="testLphp()">Probar fetch a l.php</button>
+    <button onclick="testGoogle()">Probar con google.com</button>
+    
+    <h3>Resultado:</h3>
+    <pre id="resultado">Dale click a un botón...</pre>
+
+    <h3>Info del navegador:</h3>
+    <pre id="info"></pre>
+
+<script>
+document.getElementById('info').innerText = 
+  'User-Agent: ' + navigator.userAgent + '\n\n' +
+  'URL actual: ' + window.location.href + '\n\n' +
+  'Dominio: ' + document.domain;
+
+function testLphp() {
+    const url = 'https://l.facebook.com/l.php?u=https://google.com/url?q=http://169.254.169.254/latest/meta-data/';
+    document.getElementById('resultado').innerText = 'Haciendo fetch a l.php...';
+    
+    fetch(url)
+        .then(r => r.text())
+        .then(texto => {
+            document.getElementById('resultado').innerText = 
+                'RESPUESTA DE l.php:\n\n' + texto + '\n\n' +
+                '--- FIN ---\n\n' +
+                'Conclusión: Esto es solo HTML. Tu navegador lo recibió. Meta no participó.';
+            alert('Listo. Revisa el texto. No hubo SSRF.');
+        })
+        .catch(err => {
+            document.getElementById('resultado').innerText = 'ERROR: ' + err + '\n\nPuede ser CORS si no estás en facebook.com';
+            alert('Error: ' + err);
+        });
+}
+
+function testGoogle() {
+    fetch('https://www.google.com')
+        .then(r => r.text())
+        .then(t => {
+            document.getElementById('resultado').innerText = 'Respuesta de Google:\n\n' + t.substring(0, 500) + '...';
+        })
+        .catch(e => document.getElementById('resultado').innerText = 'Error Google: ' + e);
+}
+</script>
+</body>
+</html>
